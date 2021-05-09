@@ -1,3 +1,4 @@
+{-# LANGUAGE MultiWayIf #-}
 module Main where
 
 import Codec.Picture
@@ -11,10 +12,16 @@ import qualified Data.ByteString as ByteString
 pinkBg :: Color
 pinkBg = makeColorI 0xfe 0xe5 0xfc 0xff
 
+bgWidth :: Float
+bgWidth = 640
+
+bgHeight :: Float
+bgHeight = 339
+
 backgroundPicture :: Picture
 backgroundPicture
   = color pinkBg
-  $ rectangleSolid 640 339
+  $ rectangleSolid bgWidth bgHeight
 
 app :: [Picture] -> IO ()
 app frames = do
@@ -37,9 +44,31 @@ app frames = do
     frame i
       = scale 1.5 1.5 (frames !! i)
 
+    leftBorder :: Picture
+    leftBorder
+      = translate (-bgWidth/2 - 5) 0
+          (rectangleSolid 3 (bgHeight + 9))
+     <> translate (-bgWidth/2 - 2) (bgHeight/2 + 5)
+          (rectangleSolid 10 3)
+     <> translate (-bgWidth/2 - 2) (-bgHeight/2 - 5)
+          (rectangleSolid 10 3)
+
+    rightBorder :: Picture
+    rightBorder
+      = translate (bgWidth/2 + 6) 0
+          (rectangleSolid 3 (bgHeight + 9))
+     <> translate (bgWidth/2 + 2) (bgHeight/2 + 5)
+          (rectangleSolid 10 3)
+     <> translate (bgWidth/2 + 2) (-bgHeight/2 - 5)
+          (rectangleSolid 10 3)
+
     draw :: Int -> Picture
     draw i
-      = backgroundPicture <> frame i
+      = backgroundPicture
+     <> frame i
+     <> if | i == minIndex -> leftBorder
+           | i == maxIndex -> rightBorder
+           | otherwise     -> mempty
 
     reactEvent :: Event -> Int -> Int
     reactEvent (EventKey (SpecialKey KeyHome) Down _ _) _
