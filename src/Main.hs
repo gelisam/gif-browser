@@ -1,4 +1,16 @@
 module Main where
 
+import Graphics.Gloss
+
+
+pinkBg :: Color
+pinkBg = makeColorI 0xfe 0xe5 0xfc 0xff
+
 main :: IO ()
-main = putStrLn "typechecks."
+main = do
+  display
+    (InWindow "Nice Window" (678, 427) (10, 10))
+    white
+    ( color pinkBg
+    $ rectangleSolid 640 339
+    )
