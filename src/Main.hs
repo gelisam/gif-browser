@@ -23,7 +23,7 @@ app frames = do
     (backgroundPicture <> frame 0)
   where
     frame :: Int -> Picture
-    frame i = frames !! i
+    frame i = scale 1.5 1.5 (frames !! i)
 
 colorDistance :: PixelRGBA8 -> PixelRGBA8 -> Int
 colorDistance (PixelRGBA8 r1 g1 b1 a1)
