@@ -26,7 +26,7 @@ backgroundPicture
 app :: [Picture] -> IO ()
 app frames = do
   play
-    (InWindow "Nice Window" (678, 427) (10, 10))
+    (InWindow "gif-browser" (678, 427) (10, 10))
     white
     0
     minIndex
