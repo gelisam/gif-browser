@@ -3,6 +3,7 @@ module Main where
 import Codec.Picture
 import Graphics.Gloss
 import Graphics.Gloss.Juicy
+import Graphics.Gloss.Interface.IO.Interact
 import System.Environment
 import qualified Data.ByteString as ByteString
 
@@ -17,13 +18,46 @@ backgroundPicture
 
 app :: [Picture] -> IO ()
 app frames = do
-  display
+  play
     (InWindow "Nice Window" (678, 427) (10, 10))
     white
-    (backgroundPicture <> frame 0)
+    0
+    minIndex
+    draw
+    reactEvent
+    reactTime
   where
+    minIndex :: Int
+    minIndex = 0
+
+    maxIndex :: Int
+    maxIndex = length frames - 1
+
     frame :: Int -> Picture
-    frame i = scale 1.5 1.5 (frames !! i)
+    frame i
+      = scale 1.5 1.5 (frames !! i)
+
+    draw :: Int -> Picture
+    draw i
+      = backgroundPicture <> frame i
+
+    reactEvent :: Event -> Int -> Int
+    reactEvent (EventKey (SpecialKey KeyHome) Down _ _) _
+      = minIndex
+    reactEvent (EventKey (SpecialKey KeyLeft) Down _ _) i
+      | i > minIndex
+      = i - 1
+    reactEvent (EventKey (SpecialKey KeyRight) Down _ _) i
+      | i < maxIndex
+      = i + 1
+    reactEvent (EventKey (SpecialKey KeyEnd) Down _ _) _
+      = maxIndex
+    reactEvent _ i
+      = i
+
+    reactTime :: Float -> Int -> Int
+    reactTime _ i
+      = i
 
 colorDistance :: PixelRGBA8 -> PixelRGBA8 -> Int
 colorDistance (PixelRGBA8 r1 g1 b1 a1)
@@ -60,4 +94,8 @@ main = do
                                    frameDynamicImages
           app framePictures
     _ -> do
-      putStrLn "usage: gif-browser GIF_FILE"
+      putStrLn "usage:"
+      putStrLn "  gif-browser GIF_FILE"
+      putStrLn ""
+      putStrLn "Left/Right to navigate between frames,"
+      putStrLn "Home/End to jump to the beginnin/end."
