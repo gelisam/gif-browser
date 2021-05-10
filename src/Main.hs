@@ -12,11 +12,11 @@ import qualified Data.ByteString as ByteString
 pinkBg :: Color
 pinkBg = makeColorI 0xfe 0xe5 0xfc 0xff
 
-bgWidth :: Float
-bgWidth = 640
+bgWidth :: Num a => a
+bgWidth = 426
 
-bgHeight :: Float
-bgHeight = 339
+bgHeight :: Num a => a
+bgHeight = 230
 
 backgroundPicture :: Picture
 backgroundPicture
@@ -26,7 +26,12 @@ backgroundPicture
 app :: [Picture] -> IO ()
 app frames = do
   play
-    (InWindow "gif-browser" (678, 427) (10, 10))
+    (InWindow
+      "gif-browser"
+      ( fromIntegral bgWidth + 2*20
+      , fromIntegral bgHeight + 2*45
+      )
+      (10, 10))
     white
     0
     minIndex
@@ -42,7 +47,7 @@ app frames = do
 
     frame :: Int -> Picture
     frame i
-      = scale 1.5 1.5 (frames !! i)
+      = scale 1 1 (frames !! i)
 
     leftBorder :: Picture
     leftBorder
