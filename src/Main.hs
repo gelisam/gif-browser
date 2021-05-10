@@ -2,6 +2,7 @@
 module Main where
 
 import Codec.Picture
+import Codec.Picture.Types
 import Graphics.Gloss
 import Graphics.Gloss.Juicy
 import Graphics.Gloss.Interface.IO.Interact
@@ -28,9 +29,7 @@ app frames = do
   play
     (InWindow
       "gif-browser"
-      ( fromIntegral bgWidth + 2*20
-      , fromIntegral bgHeight + 2*45
-      )
+      (bgWidth + 2*20, bgHeight + 2*45)
       (10, 10))
     white
     0
@@ -101,16 +100,51 @@ colorDistance (PixelRGBA8 r1 g1 b1 a1)
   + abs (fromIntegral b1 - fromIntegral b2)
   + abs (fromIntegral a1 - fromIntegral a2)
 
-removeBg :: PixelRGBA8 -> Int -> PixelRGBA8 -> PixelRGBA8
-removeBg bg threshold c
-  = if colorDistance c bg <= threshold
+removePixelBg
+  :: Image PixelRGBA8
+  -> PixelRGBA8
+  -> Int
+  -> Int -> Int -> PixelRGBA8
+  -> PixelRGBA8
+removePixelBg img bg threshold x y _
+  = if flip all [-2..2] $ \dx
+    -> flip all [-2..2] $ \dy
+    -> isBgColor (pixelAtDelta dx dy)
     then PixelRGBA8 0x00 0x00 0x00 0x00
-    else c
+    else pixelAtDelta 0 0
+  where
+    isInBounds :: Int -> Int -> Bool
+    isInBounds i j
+      = i >= 0
+     && j >= 0
+     && i < imageWidth img
+     && j < imageHeight img
+
+    pixelOrBg :: Int -> Int -> PixelRGBA8
+    pixelOrBg i j
+      | isInBounds i j
+        = pixelAt img i j
+      | otherwise
+        = bg
+
+    pixelAtDelta :: Int -> Int -> PixelRGBA8
+    pixelAtDelta dx dy = pixelOrBg (x + dx) (y + dy)
+
+    isBgColor :: PixelRGBA8 -> Bool
+    isBgColor c = colorDistance c bg < threshold
+
+removeImageBg
+  :: PixelRGBA8
+  -> Int
+  -> Image PixelRGBA8
+  -> Image PixelRGBA8
+removeImageBg bg threshold img
+  = pixelMapXY (removePixelBg img bg threshold) img
 
 convertPicture :: DynamicImage -> Picture
 convertPicture
   = fromImageRGBA8
-  . pixelMap (removeBg (PixelRGBA8 0xff 0xff 0xff 0xff) 72)
+  . removeImageBg (PixelRGBA8 0xff 0xff 0xff 0xff) 92
   . convertRGBA8
 
 main :: IO ()
