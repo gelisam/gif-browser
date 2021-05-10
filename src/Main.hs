@@ -110,7 +110,7 @@ removeBg bg threshold c
 convertPicture :: DynamicImage -> Picture
 convertPicture
   = fromImageRGBA8
-  . pixelMap (removeBg (PixelRGBA8 0xff 0xff 0xff 0xff) 32)
+  . pixelMap (removeBg (PixelRGBA8 0xff 0xff 0xff 0xff) 72)
   . convertRGBA8
 
 main :: IO ()
